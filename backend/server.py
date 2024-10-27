@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+from foxnode import foxnode
+
 app = Flask(__name__)
 CORS(app)
 
@@ -10,10 +12,7 @@ def generate_diagram():
     # print("Data recivida: ", data)
     prompt = data['prompt']
     # print("Prompt recivido: ", prompt)
-    diagram_mermaid = f"""graph LR
-      A --- B
-      B-->C[fa:fa-ban {prompt}]
-      B-->D(fa:fa-spinner)"""
+    diagram_mermaid = foxnode(prompt)
     return jsonify({'diagram': diagram_mermaid})
 
 if __name__ == '__main__':

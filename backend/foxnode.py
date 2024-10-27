@@ -1,81 +1,65 @@
-import re
-
 from bond import Bond, Prompt
 
 
-def get_nodes(idea, bond):
+def get_ideas(idea, bond):
     p = Prompt(
         idea=idea,
         format="""
             {
-                "number_nodes": "***int***",
+                "main_ideas": ["***main_idea1***", "***main_idea2***", "***main_idea3***", ...],
             }
             """,
-        task="You are going to make a diagram of the given idea. First define how many nodes you will need.",
+        task="Extract the main ideas of the following text.",
         random_seed=True
     )
-    response = bond.ask(p)
+    response = None
+    while not response:
+        response = bond.ask(p)
 
-    response = response['number_nodes']
+    return response["main_ideas"]
 
-    return response
-
-
-def get_json(idea, nn, bond):
+def get_nodes(ideas, bond):
     p = Prompt(
-        idea=idea,
-        format={
-            "nodes": [{"id": i, "label": f"***node{i}***"} for i in range(1, nn + 1)],
-            "edges": [{"source": i, "target": i + 1, "label": f"***edge{i}***"} for i in range(1, nn)]
-        }
+        idea=ideas,
+        format="""
+            {
+                "summarized_ideas": ["***main_idea1***", "***main_idea2***", "***main_idea3***", ...],
+            }
+        """,
+        task="Summarize the following ideas. Use a single sentence for each idea.",
     )
-    response = bond.ask(p)
+    response = None
+    while not response:
+        response = bond.ask(p)
 
-    return response
+    return response["summarized_ideas"]
 
+def get_mermaid(ideas):
+    diagram_mermaid = "graph LR\n"
+    for i in range(len(ideas) - 1):
+        diagram_mermaid += f'    {i+1}["{ideas[i]}"] --> {i+2}["{ideas[i+1]}"]\n'
 
-def get_mermaid(diagram_json):
-    try:
-        diagram_mermaid = "graph TD\n"
-
-        nodes = {node['id']: node['label'] for node in diagram_json['nodes']}
-
-        for edge in diagram_json['edges']:
-            source = edge['source']
-            target = edge['target']
-            label = edge['label']
-            if re.match(r"\*\*\*edge\d\*\*\*", label):
-                diagram_mermaid += f'    {source}["{nodes[source]}"] --> {target}["{nodes[target]}"]\n'
-            else:
-                diagram_mermaid += f'    {source}["{nodes[source]}"] --> |"{label}"| {target}["{nodes[target]}"]\n'
-
-        return f"""
-```mermaid
-{diagram_mermaid}
-```
-            """
-    except:
-        print("Error in generating diagram.")
-        print(diagram_json)
-        return "There was an error in generating the diagram."
-
-
-
+    return diagram_mermaid
 
 def foxnode(idea):
-    b = Bond()
+    bond = Bond()
 
-    nn = get_nodes(idea, b)
+    ideas = get_ideas(idea, bond)
 
-    diagram_json = get_json(idea, nn, b)
+    nodes = get_nodes(ideas, bond)
 
-    mermaid_diagram = get_mermaid(diagram_json)
+    mermaid = get_mermaid(nodes)
 
-    return mermaid_diagram
-
+    return mermaid
 
 if __name__ == "__main__":
-    SAMPLE = "The Lean Startup process is a methodology designed to help entrepreneurs build and scale their businesses more efficiently by focusing on rapid experimentation, customer feedback, and continuous learning. It starts with the creation of a minimum viable product (MVP), which is a simplified version of the product or service that solves the core problem for early adopters. Entrepreneurs then use the MVP to gather data and insights directly from real users. Through this feedback, they can quickly test assumptions, learn what works or doesn't, and make informed decisions. This process is iterative, involving cycles of building, measuring, and learning. If the initial idea doesn't meet customer needs, entrepreneurs can pivot by adjusting their business model, product features, or target audience, or they can persevere if the feedback is positive. The aim is to minimize waste by avoiding the traditional approach of investing heavily in fully developing a product before testing it in the market, allowing startups to reduce risks and respond flexibly to changing conditions. This methodology helps businesses optimize product-market fit and scale efficiently, making it adaptable to various industries and situations."
-    d = foxnode(SAMPLE)
+    bond = Bond()
+    idea = "Biology is the scientific study of living organisms and their interactions with each other and their environment. It encompasses a wide range of topics, including genetics, evolution, ecology, and physiology, among others. Through the application of scientific principles and methods, biologists investigate the structure, function, growth, development, reproduction, and survival of all living things, from bacteria to humans. The field of biology seeks to understand the complex relationships between organisms and their environment, and to develop new technologies and treatments for human health and environmental conservation."
 
-    print(d)
+    diagram = foxnode(idea)
+
+    with open("diagram.md", "w") as f:
+        f.write(diagram)
+
+
+
