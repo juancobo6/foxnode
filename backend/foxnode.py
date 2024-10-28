@@ -1,4 +1,4 @@
-from bond import Bond, Prompt
+from bond_foxnode import Bond, Prompt
 
 
 def get_ideas(idea, bond):
