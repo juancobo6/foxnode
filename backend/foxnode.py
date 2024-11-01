@@ -1,46 +1,6 @@
 from bond_foxnode import Bond, Prompt
 
 
-def get_ideas(idea, bond):
-    p = Prompt(
-        idea=idea,
-        format="""
-            {
-                "main_ideas": ["***main_idea1***", "***main_idea2***", "***main_idea3***", ...],
-            }
-            """,
-        task="Extract the main ideas of the following text.",
-        random_seed=True
-    )
-    response = None
-    while not response:
-        response = bond.ask(p)
-
-    return response["main_ideas"]
-
-def get_nodes(ideas, bond):
-    p = Prompt(
-        idea=ideas,
-        format="""
-            {
-                "summarized_ideas": ["***main_idea1***", "***main_idea2***", "***main_idea3***", ...],
-            }
-        """,
-        task="Summarize the following ideas. Use a single sentence for each idea.",
-    )
-    response = None
-    while not response:
-        response = bond.ask(p)
-
-    return response["summarized_ideas"]
-
-def get_mermaid(ideas):
-    diagram_mermaid = "graph LR\n"
-    for i in range(len(ideas) - 1):
-        diagram_mermaid += f'    {i+1}["{ideas[i]}"] --> {i+2}["{ideas[i+1]}"]\n'
-
-    return diagram_mermaid
-
 def foxnode(idea):
     bond = Bond(model="llama3.2:3b")
 
@@ -87,7 +47,7 @@ def foxnode(idea):
     # -------
     # MERMAID
     # -------
-    mermaid = "```mermaid\ngraph TD\n"
+    mermaid = "graph TD\n"
     subgraph = 1
     total = 0
     for key, value in processes_main_ideas.items():
@@ -108,8 +68,6 @@ def foxnode(idea):
     for key in processes_main_ideas.keys():
         mermaid += f'    title -->|{key}| subgraph{subgraph}\n'
         subgraph += 1
-
-    mermaid += '```\n'
 
     return mermaid
 
