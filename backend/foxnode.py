@@ -59,8 +59,6 @@ def foxnode(idea):
             total += 1
             mermaid += f'    {total}["{value[index]}"]\n'
             nodes.append(total)
-        # for i in nodes[:-1]:
-        #     mermaid += f'    {i} --> {i+1}\n'
         mermaid += f'    end\n'
     mermaid += f'    title["{title}"]\n'
 
@@ -82,8 +80,3 @@ if __name__ == "__main__":
     environmental conservation."""
 
     t = foxnode(idea)
-
-    # diagram = foxnode(idea)
-    #
-    # with open("diagram.md", "w") as f:
-    #     f.write(diagram)

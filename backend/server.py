@@ -9,9 +9,7 @@ CORS(app)
 @app.route('/generate_diagram', methods=['POST'])
 def generate_diagram():
     data = request.get_json()
-    # print("Data recivida: ", data)
     prompt = data['prompt']
-    # print("Prompt recivido: ", prompt)
     diagram_mermaid = foxnode(prompt)
     return jsonify({'diagram': diagram_mermaid})
 
